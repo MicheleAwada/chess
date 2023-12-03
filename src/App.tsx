@@ -156,6 +156,18 @@ function GetSquare({row, col, value}: {row:number, col:number, value:number }) {
   )
 }
 
+function mirror_matrix_x(matrix: number[][]) {
+  return matrix.map((row: number[]) => {
+    return row.slice().reverse()
+  })
+  
+}
+function mirror_matrix_y(matrix: number[][]) {
+  return matrix.slice().reverse()
+}
+function flipBoard(board: number[][]) {
+  return mirror_matrix_y(mirror_matrix_x(board))
+}
 
 // function possiblePieceMoves(id:number, row:number, col:number) {
 
@@ -163,6 +175,9 @@ function GetSquare({row, col, value}: {row:number, col:number, value:number }) {
 
 
 function GetBoard({ board, isWhitePlayer }: { board: number[][], isWhitePlayer: boolean }) {
+  if (!isWhitePlayer) {
+    board = flipBoard(board)
+  }
   return (
     <div id='board'>
       {
