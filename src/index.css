@@ -1,0 +1,23 @@
+.light_square {
+  background-color: white;
+}
+.dark_square {
+  background-color: green;
+}
+
+.square_size {
+  height: 4rem;
+  width: 4rem;
+}
+
+
+
+#board {
+  display: flex;
+  flex-flow: column;
+  
+}
+
+.row {
+  display: flex;
+}
