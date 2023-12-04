@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -33,12 +33,12 @@ type pieceType = {
 
 const pieceInfo: pieceType = {
   "empty": {id: 0, value: 0, image: ["", ""]},
-  "king": {id: 1, value: 0, image: [blackKing, whiteKing]},
-  "queen": {id: 2, value: 0, image: [blackQueen, whiteQueen]},
-  "rook": {id: 3, value: 0, image: [blackRook, whiteRook]},
-  "knight": {id: 4, value: 0, image: [blackKnight, whiteKnight]},
-  "bishop": {id: 5, value: 0, image: [blackBishop, whiteBishop]},
-  "pawn": {id: 6, value: 0, image: [blackPawn, whitePawn]},
+  "king": {id: 1, value: Infinity, image: [blackKing, whiteKing]},
+  "queen": {id: 2, value: 9, image: [blackQueen, whiteQueen]},
+  "rook": {id: 3, value: 5, image: [blackRook, whiteRook]},
+  "knight": {id: 4, value: 3, image: [blackKnight, whiteKnight]},
+  "bishop": {id: 5, value: 3, image: [blackBishop, whiteBishop]},
+  "pawn": {id: 6, value: 1, image: [blackPawn, whitePawn]},
 }
 function getNameFromId(id: number): string {
   id = Math.abs(id)
@@ -54,6 +54,20 @@ function getInfoFromId(id: number) {
 }
 
 
+
+function arraysAreEqual(arr1:any[], arr2:any[]): boolean {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 
 // function intToPieceName(val: number): [string, boolean] {
@@ -77,7 +91,7 @@ function getInfoFromId(id: number) {
 //   return output * getColorMultiplier(isWhite)
 // }
 
-function isWhiteFromValue(value: number) {
+function isWhiteFromId(value: number) {
   return value>0 
 }
 
@@ -140,21 +154,11 @@ function createMatrix(initialValueFunction: any): number[][] {
   return matrix;
 }
 
-function isLightSquare(row: number, col: number) {
+function checkLightSquare(row: number, col: number) {
   return row%2 === col%2
 }
 
 
-function GetSquare({row, col, value}: {row:number, col:number, value:number }) {
-  const isWhite = isWhiteFromValue(value)
-  const pieceName = getNameFromId(value)
-  const lightSquare = isLightSquare(row,col)
-  return (
-    <div className={`square_size ${(lightSquare ? "light_square" : "dark_square")}`}>
-      {value !==0 && <img src={pieceInfo[pieceName].image[+ isWhite]} alt={pieceName} className='square_size piece_image' />}
-    </div>
-  )
-}
 
 function mirror_matrix_x(matrix: number[][]) {
   return matrix.map((row: number[]) => {
@@ -169,15 +173,192 @@ function flipBoard(board: number[][]) {
   return mirror_matrix_y(mirror_matrix_x(board))
 }
 
-// function possiblePieceMoves(id:number, row:number, col:number) {
+function pos_exists_in_board(row:number, col:number) {
+  if (8>row && row>0 && 8>col && col>0 ) {
+    return true
+  }
+  return false
+}
 
-// }
+function pieceInTheWay(board:number[][], row:number, col:number, isWhitesMove: boolean) {
+  const pieceId = board[row][col];
+  const piece_info = getInfoFromId(pieceId)
+  const pieceColorIsWhite = isWhiteFromId(pieceId)
+  if (pieceId === 0){
+    return 0
+  }
+  if (pieceColorIsWhite && isWhitesMove) {
+    return 2
+  }
+  return 1
+
+}
+
+function add_arrays(...arrays: number[][]) {
+  const arrays_len = arrays[0].length
+  const output = Array(arrays_len).fill(0)
+  arrays.forEach((number_arr:number[]) => {
+    number_arr.forEach((number:number, index: number) => {
+      output[index] += number 
+    })
+  })
+  return output
+}
+
+function possiblePieceMoves(board: number[][], row:number, col:number): number[][] {
+  const id:number = board[row][col]
+  let possible_moves: number[][] = [];
+  const isWhitesPlay = board[row][col]>0
+  switch(id) {      
+    case(pieceInfo["king"].id):
+      for (let i=-1; i<2; i++) {
+        for (let j=-1; j<2; j++) {
+          if ((i===0 && j===0) || pos_exists_in_board(i, j)) {
+            continue
+          }
+          possible_moves.push(add_arrays([row, col], [i, j]))
+        }
+      }
+    case(pieceInfo["queen"].id):
+      for (let d=0; d<4; d++) {
+        const direction_multiplier = (d>2 && -1 || 1)
+        const move = [(d+1)%2 * direction_multiplier, Math.floor(d/2) * direction_multiplier]
+        for (let i=0; i<8; i++) {
+          if (!pos_exists_in_board(row, col)) {
+            break
+          }
+          const new_pos = add_arrays([row,col], move)
+          const pieceInTheWayOutput = pieceInTheWay(board, new_pos[0], new_pos[1], isWhitesPlay)
+          if (pieceInTheWayOutput===0 || pieceInTheWayOutput===1) {
+            possible_moves.push(new_pos)
+          }
+          if (pieceInTheWayOutput===1 || pieceInTheWayOutput===2) {
+            break
+          }
+        }
+      }
+      for (let d=0; d<4; d++) {
+        const move = [d>2 && -1 || 1, d%2==0 && -1 || 1]
+        for (let i=0; i<8; i++) {
+          if (!pos_exists_in_board(row, col)) {
+            break
+          }
+          const new_pos = add_arrays([row,col], move)
+          const pieceInTheWayOutput = pieceInTheWay(board, new_pos[0], new_pos[1], isWhitesPlay)
+          if (pieceInTheWayOutput===0 || pieceInTheWayOutput===1) {
+            possible_moves.push(new_pos)
+          }
+          if (pieceInTheWayOutput===1 || pieceInTheWayOutput===2) {
+            break
+          }
+        }
+      }
+
+    case(pieceInfo["bishop"].id):
+    //bishop
+    for (let d=0; d<4; d++) {
+      const move = [d>2 && -1 || 1, d%2==0 && -1 || 1]
+      for (let i=0; i<8; i++) {
+        if (!pos_exists_in_board(row, col)) {
+          break
+        }
+        const new_pos = add_arrays([row,col], move)
+        const pieceInTheWayOutput = pieceInTheWay(board, new_pos[0], new_pos[1], isWhitesPlay)
+        if (pieceInTheWayOutput===0 || pieceInTheWayOutput===1) {
+          possible_moves.push(new_pos)
+        }
+        if (pieceInTheWayOutput===1 || pieceInTheWayOutput===2) {
+          break
+        }
+      }
+    }
+    case(pieceInfo["rook"].id):
+      for (let d=0; d<4; d++) {
+        const direction_multiplier = (d>2 && -1 || 1)
+        const move = [(d+1)%2 * direction_multiplier, Math.floor(d/2) * direction_multiplier]
+        for (let i=0; i<8; i++) {
+          if (!pos_exists_in_board(row, col)) {
+            break
+          }
+          const new_pos = add_arrays([row,col], move)
+          const pieceInTheWayOutput = pieceInTheWay(board, new_pos[0], new_pos[1], isWhitesPlay)
+          if (pieceInTheWayOutput===0 || pieceInTheWayOutput===1) {
+            possible_moves.push(new_pos)
+          }
+          if (pieceInTheWayOutput===1 || pieceInTheWayOutput===2) {
+            break
+          }
+        }
+      }
+    case(pieceInfo["knight"].id):
+      const moves = [[2, 1], [2,-1], [-2, 1], [-2, -1], [1, 2], [1,-2], [-1, 2], [-1, -2]]
+      moves.forEach((move_pos, index: number) => {
+        const to_move_pos = add_arrays([row,col], move_pos)
+        const [to_move_row, to_move_col] = to_move_pos
+
+        const pieceInTheWayOutput = pieceInTheWay(board, to_move_row, to_move_col, isWhitesPlay)
+        if (pieceInTheWayOutput === 2) {
+          return
+        }
+        possible_moves.push(to_move_pos)
+      })
+    
+    case(pieceInfo["pawn"].id):
+      let moves = [[1, 0], [-1, 1], [-1, -1], [row-2, col]]
+      if (isWhitesPlay) {
+        moves = moves.map((row_col: number[]) => {
+          return row_col.map((num: number) => {
+            return num * -1
+          })
+        })
+      }
+        if (row===8-1-1) { // has not moved yet
+          possible_moves.push(moves[3])
+        }
+  } 
+  return possible_moves
+}
+
+function GetSquare({row, col, value, stateSelectedPiece, possibleMoves}: {row:number, col:number, value:number, stateSelectedPiece: [number[], any], possibleMoves: number[][] }) {
+  const [selectedPiece, setSelectedPiece] = stateSelectedPiece
+
+  
+  
+    const isWhite = isWhiteFromId(value)
+    const pieceName = getNameFromId(value)
+    const isLightSquare = checkLightSquare(row,col)
+
+  const is_selected_square = selectedPiece && arraysAreEqual([row,col], selectedPiece);
+  const is_possible_square = possibleMoves && possibleMoves.includes([row,col]);
+
+  let class_name = "";
+  class_name += "square_size "
+  if (is_selected_square) {
+    class_name += isLightSquare ? "light_selected_square " : "dark_selected_square ";
+  } else if (is_possible_square) {
+    class_name += "possible_square ";
+  } else {
+    class_name += isLightSquare ? "light_square " : "dark_square "; 
+  }
+  return (
+    <div onClick={() => {
+      if (selectedPiece.length>0) {
+
+      }
+      return setSelectedPiece([row,col])}
+      } className={class_name}>
+      {value !==0 && <img src={pieceInfo[pieceName].image[+ isWhite]} alt={pieceName} className='square_size piece_image' />}
+    </div>
+  )
+}
 
 
-function GetBoard({ board, isWhitePlayer }: { board: number[][], isWhitePlayer: boolean }) {
+function GetBoard({ board, stateSelectedPiece, possibleMoves, isWhitePlayer }: { board: number[][], stateSelectedPiece: [number[], any], possibleMoves: number[][], isWhitePlayer: boolean }) {
   if (!isWhitePlayer) {
     board = flipBoard(board)
   }
+
+
   return (
     <div id='board'>
       {
@@ -185,7 +366,7 @@ function GetBoard({ board, isWhitePlayer }: { board: number[][], isWhitePlayer: 
           return (
             <div className={`row`} key={i}>
               {row.map((col: number, j: number) => {
-                return <GetSquare row={i} col={j} value={col} key={j} />
+                return <GetSquare row={i} col={j} value={col} key={j} stateSelectedPiece = {stateSelectedPiece} possibleMoves = {possibleMoves} />
               })}
             </div>
           )
@@ -199,9 +380,18 @@ function GetBoard({ board, isWhitePlayer }: { board: number[][], isWhitePlayer: 
 function App() {
   const [board, setBoard] = useState(createMatrix(initialBoardPiece))
   const [isWhitePlayer, setIsWhitePlayer] = useState(true)
+  const stateSelectedPiece = useState([])
+  const [selectedPiece, setSelectedPiece] = stateSelectedPiece
+  const [possibleMoves, setPossibleMoves]: [number[][], any] = useState([])
+
+  useEffect(() => {
+    if (selectedPiece.length === 0) {return}
+    setPossibleMoves(possiblePieceMoves(board, selectedPiece[0], selectedPiece[1]))
+  }, [selectedPiece])
+
   return (
     <>
-      <GetBoard board={board} isWhitePlayer={isWhitePlayer} />
+      <GetBoard board={board} isWhitePlayer={isWhitePlayer} stateSelectedPiece={stateSelectedPiece} possibleMoves={possibleMoves} />
     </>
   )
 }

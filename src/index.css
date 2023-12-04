@@ -1,8 +1,17 @@
 .light_square {
-  background-color: white;
+  background-color: rgb(224, 214, 214);
 }
 .dark_square {
   background-color: green;
+}
+.possible_square {
+  background-color: rgb(255, 204, 0);
+}
+.light_selected_square {
+  background-color: rgb(126, 126, 126);
+}
+.dark_selected_square {
+  background-color: rgb(0, 90, 0);
 }
 
 .square_size {
@@ -20,4 +29,8 @@
 
 .row {
   display: flex;
+}
+
+button {
+    
 }
