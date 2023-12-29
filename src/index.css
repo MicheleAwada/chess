@@ -45,6 +45,21 @@
   top: 0;
   left:0;
 }
+.abs-bl {
+  position: absolute;
+  bottom: 0;
+  left:0;
+}
+.abs-br {
+  position: absolute;
+  right: 0;
+  bottom:0;
+}
+.abs-tr {
+  position: absolute;
+  top: 0;
+  right:0;
+}
 
 .relative {
   position: relative;

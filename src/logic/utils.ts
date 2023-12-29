@@ -63,4 +63,27 @@ function add_rowCols(...rowCols:[number, number][]) {
   return output
 }
 
+export function to_value_board(board:number[][], getInfoFromKey: any): number[][] {
+  let board_value = board.slice().map((row:number[]) => {
+    return row.map((id:number) => {
+      return getInfoFromKey(Math.abs(id)).value * getColorMultiplier(isWhiteFromId(id))
+    })
+  })
+  return board_value
+}
+
+export function add_boards_if(board1: number[][],board2:number[][],condition: (piece1:number,piece2:number) => boolean = (piece1:number,piece2:number) => true, mirrior_y_if: (piece1:number, piece2:number) => boolean= (piece1:number,piece2:number) => true) {
+  
+  for (let i:number = 0; i<8; i++) {
+    for (let j:number = 0; j<8; j++) {
+      if (condition(board1[i][j],board2[i][j])) {
+        const row = mirrior_y_if(board1[i][j], board2[i][j]) ? 7-i : i
+        const color_multiplier = getColorMultiplier(isWhiteFromId(board1[i][j]))
+        board1[i][j] += (board2[row][j] * color_multiplier)
+      }
+    }
+  }
+  return board1
+}
+
 export { flipBoard, mirroedInt, isWhiteFromId, getColorMultiplier, arraysAreEqual, add_rowCols }
