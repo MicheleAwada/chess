@@ -2,7 +2,7 @@ import { pieceInfo, getInfoFromId } from "../App";
 import { allPieceMoves, movePiece } from "./standard piece logic";
 import {
 	add_boards_if,
-	getColorMultiplier,
+	// getColorMultiplier,
 	isWhiteFromId,
 	to_value_board,
 } from "./utils";
@@ -11,29 +11,30 @@ function choice(arr: any[]): any[] {
 	return arr[Math.floor(arr.length * Math.random())];
 }
 
-interface type_eval_info {
-	pieceOrigin: [number, number];
-	pieceMove: [number, number];
-	eval: number;
-}
+// interface type_eval_info {
+// 	pieceOrigin: [number, number];
+// 	pieceMove: [number, number];
+// 	eval: number;
+// }
 
-function getMinOrMaxFromDictList(list: type_eval_info[], isWhite: boolean) {
-	return list.reduce((min_or_max: type_eval_info, current: type_eval_info) => {
-		if (
-			isWhite ? current.eval > min_or_max.eval : current.eval < min_or_max.eval
-		) {
-			return current;
-		}
-		return min_or_max;
-	});
-}
+// function getMinOrMaxFromDictList(list: type_eval_info[], isWhite: boolean) {
+// 	return list.reduce((min_or_max: type_eval_info, current: type_eval_info) => {
+// 		if (
+// 			isWhite ? current.eval > min_or_max.eval : current.eval < min_or_max.eval
+// 		) {
+// 			return current;
+// 		}
+// 		return min_or_max;
+// 	});
+// }
 
 export default function robot_move_board(
 	board: number[][],
 	isWhiteTurn: boolean
 ) {
 	const possible_moves = allPieceMoves(board, isWhiteTurn);
-	const scores: type_eval_info[] = [];
+	// const scores: type_eval_info[] = [];
+
 	// possible_moves.forEach((pieceInfo) => {
 	//     const pieceOrigin = pieceInfo[0]
 	//     const pieceMoves = pieceInfo[1]
@@ -74,7 +75,7 @@ export function evaulation(board: number[][]) {
 	knight_position_bonus.map((row: number[]) => {
 		return row.map((num: number) => (num - 2) / 5);
 	});
-	function knight_position_bonus_condition(piece1: number, piece2: number) {
+	function knight_position_bonus_condition(piece1: number) {
 		if (Math.abs(piece1) === pieceInfo["knight"].id) {
 			return true;
 		}
@@ -100,10 +101,7 @@ export function evaulation(board: number[][]) {
 	laser_piece_position_bonus.map((row: number[]) => {
 		return row.map((num: number) => (num - 1) / 2);
 	});
-	function laser_piece_position_bonus_condition(
-		piece1: number,
-		piece2: number
-	) {
+	function laser_piece_position_bonus_condition(piece1: number) {
 		if (
 			Math.abs(piece1) === pieceInfo["queen"].id ||
 			Math.abs(piece1) === pieceInfo["bishop"].id ||
@@ -133,13 +131,13 @@ export function evaulation(board: number[][]) {
 	king_position_bonus.map((row: number[]) => {
 		return row.map((num: number) => num / 2);
 	});
-	function king_position_bonus_condition(piece1: number, piece2: number) {
+	function king_position_bonus_condition(piece1: number) {
 		if (Math.abs(piece1) === pieceInfo["king"].id) {
 			return true;
 		}
 		return false;
 	}
-	function basic_mirrior_y_if(piece1: number, piece2: number) {
+	function basic_mirrior_y_if(piece1: number) {
 		if (isWhiteFromId(piece1)) {
 			return false;
 		}
@@ -166,7 +164,7 @@ export function evaulation(board: number[][]) {
 	pawn_position_bonus.map((row: number[]) => {
 		return row.map((num: number) => num / 7);
 	});
-	function pawn_position_bonus_condition(piece1: number, piece2: number) {
+	function pawn_position_bonus_condition(piece1: number) {
 		if (Math.abs(piece1) === pieceInfo["pawn"].id) {
 			return true;
 		}
@@ -213,27 +211,27 @@ export function evaulation(board: number[][]) {
 //     return best_move_board
 // }
 
-function minmax(board: number[][], isWhitesTurn: boolean, depth: number = 5) {
-	if (depth === 0) {
-		return evaulation(board);
-	}
-	const possible_moves = allPieceMoves(board, isWhitesTurn);
-	let best = isWhitesTurn ? -10000 : 10000;
-	possible_moves.forEach((pieceInfo) => {
-		const pieceOrigin = pieceInfo[0];
-		const pieceMoves = pieceInfo[1];
-		pieceMoves.forEach((rowCol: [number, number]) => {
-			const move_board = movePiece(
-				JSON.parse(JSON.stringify(board)),
-				pieceOrigin,
-				rowCol
-			);
-			const val = minmax(move_board, !isWhitesTurn, depth - 1);
+// function minmax(board: number[][], isWhitesTurn: boolean, depth: number = 5) {
+// 	if (depth === 0) {
+// 		return evaulation(board);
+// 	}
+// 	const possible_moves = allPieceMoves(board, isWhitesTurn);
+// 	let best = isWhitesTurn ? -10000 : 10000;
+// 	possible_moves.forEach((pieceInfo) => {
+// 		const pieceOrigin = pieceInfo[0];
+// 		const pieceMoves = pieceInfo[1];
+// 		pieceMoves.forEach((rowCol: [number, number]) => {
+// 			const move_board = movePiece(
+// 				JSON.parse(JSON.stringify(board)),
+// 				pieceOrigin,
+// 				rowCol
+// 			);
+// 			const val = minmax(move_board, !isWhitesTurn, depth - 1);
 
-			if (val > best) {
-				best = val;
-			}
-		});
-	});
-	return best;
-}
+// 			if (val > best) {
+// 				best = val;
+// 			}
+// 		});
+// 	});
+// 	return best;
+// }
